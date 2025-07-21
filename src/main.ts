@@ -34,6 +34,9 @@ class P2pool extends utils.Adapter {
      * /api/shares?limit=[limit]&miner=[id|address][&onlyBlocks][&noMainStatus][&noUncles][&noMiners]
      * /api/block_by_id/<blockId>[/full|/light|/raw|/info|/payouts|/coinbase]
      * /api/block_by_height/<blockHeight>[/full|/light|/raw|/info|/payouts|/coinbase]
+     *
+     * @param Command - The command to execute, e.g., see list above
+     * @param SearchLimit - The search limit for payouts, e.g., 0 for all, 10 is default
      */
     private genURL(Command: string, SearchLimit: string): string {
         let retVal = "";
@@ -61,13 +64,13 @@ class P2pool extends utils.Adapter {
         // This function can be used to read miner information
         // It can be called from the updateP2pool function or elsewhere
         // Example: this.readMinerInfo();
-        let reqUrl = this.genURL("miner_info", "0");
+        const reqUrl = this.genURL("miner_info", "0");
         this.log.debug(reqUrl);
         let jsonData = null;
         let validJsonData = false;
         await axios
             .get(reqUrl)
-            .then(async (res) => {
+            .then((res) => {
                 jsonData = res.data;
                 validJsonData = true;
                 if (validJsonData) {
@@ -91,10 +94,9 @@ class P2pool extends utils.Adapter {
             });
         if (validJsonData && jsonData !== null) {
             return jsonData;
-        } else {
-            this.log.error("No valid JSON data received from p2pool.");
-            return JSON.parse("{}");
         }
+        this.log.error("No valid JSON data received from p2pool.");
+        return JSON.parse("{}");
     }
     /**
      * Callback function for the interval
@@ -103,7 +105,7 @@ class P2pool extends utils.Adapter {
         // This function will be called every 2 seconds
         this.log.debug("Callback function called");
         // You can add your logic here, e.g., fetching data from an API
-        let jsonData = await this.readMinerInfo();
+        const jsonData = await this.readMinerInfo();
         this.log.info(`p2pool response after callback: ${JSON.stringify(jsonData)}`);
         if (jsonData && Object.keys(jsonData).length > 0) {
             // Process the JSON data as needed
@@ -115,20 +117,24 @@ class P2pool extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        await this.setState("info.connection", false, true);
         // Initialize your adapter here
-        let reqUrl = this.genURL("miner_info", "0");
+        const reqUrl = this.genURL("miner_info", "0");
         this.log.debug(reqUrl);
 
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
-        this.log.info("config monero key: " + this.config.monero_key);
+        this.log.info(`config monero key: ${this.config.monero_key}`);
         this.log.info("starting p2pool observer adapter...");
-        this.updateP2pool(); // Initial call to fetch data immediately
+        await this.updateP2pool(); // Initial call to fetch data immediately
         this.refreshInterval = this.setInterval(this.updateP2pool, 120000); // 120 seconds
+        await this.setState("info.connection", true, true);
     }
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
+     *
+     * @param callback - function to call after everything is cleaned up
      */
     private onUnload(callback: () => void): void {
         try {
@@ -139,7 +145,10 @@ class P2pool extends utils.Adapter {
             this.clearInterval(this.refreshInterval);
 
             callback();
-        } catch (e) {
+        } catch (error) {
+            if (error instanceof Error) {
+                this.log.debug(error.message);
+            }
             callback();
         }
     }
@@ -161,6 +170,9 @@ class P2pool extends utils.Adapter {
 
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id - the ID of the state that changed
+     * @param state - the state object
      */
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         if (state) {

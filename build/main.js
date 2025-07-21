@@ -45,6 +45,9 @@ class P2pool extends utils.Adapter {
    * /api/shares?limit=[limit]&miner=[id|address][&onlyBlocks][&noMainStatus][&noUncles][&noMiners]
    * /api/block_by_id/<blockId>[/full|/light|/raw|/info|/payouts|/coinbase]
    * /api/block_by_height/<blockHeight>[/full|/light|/raw|/info|/payouts|/coinbase]
+   *
+   * @param Command - The command to execute, e.g., see list above
+   * @param SearchLimit - The search limit for payouts, e.g., 0 for all, 10 is default
    */
   genURL(Command, SearchLimit) {
     let retVal = "";
@@ -69,11 +72,11 @@ class P2pool extends utils.Adapter {
     return retVal;
   }
   async readMinerInfo() {
-    let reqUrl = this.genURL("miner_info", "0");
+    const reqUrl = this.genURL("miner_info", "0");
     this.log.debug(reqUrl);
     let jsonData = null;
     let validJsonData = false;
-    await import_axios.default.get(reqUrl).then(async (res) => {
+    await import_axios.default.get(reqUrl).then((res) => {
       jsonData = res.data;
       validJsonData = true;
       if (validJsonData) {
@@ -96,17 +99,16 @@ class P2pool extends utils.Adapter {
     });
     if (validJsonData && jsonData !== null) {
       return jsonData;
-    } else {
-      this.log.error("No valid JSON data received from p2pool.");
-      return JSON.parse("{}");
     }
+    this.log.error("No valid JSON data received from p2pool.");
+    return JSON.parse("{}");
   }
   /**
    * Callback function for the interval
    */
   updateP2pool = async () => {
     this.log.debug("Callback function called");
-    let jsonData = await this.readMinerInfo();
+    const jsonData = await this.readMinerInfo();
     this.log.info(`p2pool response after callback: ${JSON.stringify(jsonData)}`);
     if (jsonData && Object.keys(jsonData).length > 0) {
       this.log.info(`Received data: ${JSON.stringify(jsonData)}`);
@@ -116,21 +118,28 @@ class P2pool extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    let reqUrl = this.genURL("miner_info", "0");
+    await this.setState("info.connection", false, true);
+    const reqUrl = this.genURL("miner_info", "0");
     this.log.debug(reqUrl);
-    this.log.info("config monero key: " + this.config.monero_key);
+    this.log.info(`config monero key: ${this.config.monero_key}`);
     this.log.info("starting p2pool observer adapter...");
-    this.updateP2pool();
+    await this.updateP2pool();
     this.refreshInterval = this.setInterval(this.updateP2pool, 12e4);
+    await this.setState("info.connection", true, true);
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!
+   *
+   * @param callback - function to call after everything is cleaned up
    */
   onUnload(callback) {
     try {
       this.clearInterval(this.refreshInterval);
       callback();
-    } catch (e) {
+    } catch (error) {
+      if (error instanceof Error) {
+        this.log.debug(error.message);
+      }
       callback();
     }
   }
@@ -150,6 +159,9 @@ class P2pool extends utils.Adapter {
   // }
   /**
    * Is called if a subscribed state changes
+   *
+   * @param id - the ID of the state that changed
+   * @param state - the state object
    */
   onStateChange(id, state) {
     if (state) {
