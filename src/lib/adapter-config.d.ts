@@ -5,6 +5,7 @@ declare global {
     namespace ioBroker {
         interface AdapterConfig {
             monero_key: string;
+            mini_pool: boolean;
         }
     }
 }

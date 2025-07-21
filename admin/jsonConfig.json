@@ -10,7 +10,17 @@
             "lg": 4,
             "xl": 4,
             "label": "moneroKey",
-            "help": "helpMoneroKey",
+            "help": "helpMoneroKey"
+        },
+        "mini_pool": {
+            "type": "checkbox",
+            "xs": 12,
+            "sm": 12,
+            "md": 6,
+            "lg": 4,
+            "xl": 4,
+            "label": "miniPool",
+            "help": "helpMiniPool",
             "newLine": true
         }
     }

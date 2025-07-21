@@ -22,6 +22,7 @@ class P2pool extends utils.Adapter {
         // this.on("message", this.onMessage.bind(this));
         this.on("unload", this.onUnload.bind(this));
     }
+    refreshInterval: ioBroker.Interval | undefined = undefined;
     /**
      * create URL
      * /api/pool_info
@@ -36,44 +37,42 @@ class P2pool extends utils.Adapter {
      */
     private genURL(Command: string, SearchLimit: string): string {
         let retVal = "";
+        let url = "";
+        if (this.config.mini_pool) {
+            url = `mini.p2pool.observer`;
+        } else {
+            url = `p2pool.observer`;
+        }
         if (Command === "") {
             this.log.error("Command is empty");
             return retVal;
         } else if (Command === "miner_info") {
-            retVal = `https://p2pool.observer/api/${Command}/${this.config.monero_key}`;
+            retVal = `https://${url}/api/${Command}/${this.config.monero_key}`;
         } else if (Command === "pool_info") {
-            retVal = `https://p2pool.observer/api/${Command}`;
+            retVal = `https://${url}/api/${Command}`;
         } else if (Command === "payouts") {
-            retVal = `https://p2pool.observer/api/${Command}/${this.config.monero_key}?search_limit=${SearchLimit}`;
+            retVal = `https://${url}/api/${Command}/${this.config.monero_key}?search_limit=${SearchLimit}`;
         } else {
             this.log.error(`Unknown command: ${Command}`);
         }
         return retVal;
     }
-    /**
-     * Is called when databases are connected and adapter received configuration.
-     */
-    private async onReady(): Promise<void> {
-        // Initialize your adapter here
-        let reqUrl = this.genURL("pool_info", "0");
+    private async readMinerInfo(): Promise<JSON> {
+        // This function can be used to read miner information
+        // It can be called from the updateP2pool function or elsewhere
+        // Example: this.readMinerInfo();
+        let reqUrl = this.genURL("miner_info", "0");
         this.log.debug(reqUrl);
-        axios
+        let jsonData = null;
+        let validJsonData = false;
+        await axios
             .get(reqUrl)
             .then(async (res) => {
-                this.log.debug(JSON.stringify(res.data));
-                let jsonData = null;
-                let validJsonData = false;
-                if (res.data.toString().startsWith("{XC_SUC}")) {
-                    jsonData = JSON.parse(res.data.substring(8));
-                    validJsonData = true;
-                } else if (JSON.stringify(res.data).startsWith('{"XC_SUC":[')) {
-                    jsonData = res.data.XC_SUC;
-                    validJsonData = true;
-                } else {
-                    jsonData = [];
-                }
+                jsonData = res.data;
+                validJsonData = true;
                 if (validJsonData) {
                     try {
+                        this.log.info(`p2pool response: ${JSON.stringify(jsonData)}`);
                     } catch (error) {
                         if (error instanceof Error) {
                             this.log.error(error.message);
@@ -81,18 +80,51 @@ class P2pool extends utils.Adapter {
                         this.log.error(`json format invalid:${JSON.stringify(jsonData)}`);
                     }
                 } else {
-                    this.log.error(`mediola device rejected the request: ${res.data.toString()}`);
+                    this.log.error(`p2pool rejected the request: ${res.data.toString()}`);
                 }
             })
             .catch((error) => {
                 if (error instanceof Error) {
                     this.log.error(error.message);
                 }
-                this.log.error("mediola device not reached by getting sys vars");
+                this.log.error("p2pool request failed.");
             });
+        if (validJsonData && jsonData !== null) {
+            return jsonData;
+        } else {
+            this.log.error("No valid JSON data received from p2pool.");
+            return JSON.parse("{}");
+        }
+    }
+    /**
+     * Callback function for the interval
+     */
+    private updateP2pool = async (): Promise<void> => {
+        // This function will be called every 2 seconds
+        this.log.debug("Callback function called");
+        // You can add your logic here, e.g., fetching data from an API
+        let jsonData = await this.readMinerInfo();
+        this.log.info(`p2pool response after callback: ${JSON.stringify(jsonData)}`);
+        if (jsonData && Object.keys(jsonData).length > 0) {
+            // Process the JSON data as needed
+            this.log.info(`Received data: ${JSON.stringify(jsonData)}`);
+            // Here you can update states or perform other actions with the received data
+        }
+    };
+    /**
+     * Is called when databases are connected and adapter received configuration.
+     */
+    private async onReady(): Promise<void> {
+        // Initialize your adapter here
+        let reqUrl = this.genURL("miner_info", "0");
+        this.log.debug(reqUrl);
+
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
         this.log.info("config monero key: " + this.config.monero_key);
+        this.log.info("starting p2pool observer adapter...");
+        this.updateP2pool(); // Initial call to fetch data immediately
+        this.refreshInterval = this.setInterval(this.updateP2pool, 120000); // 120 seconds
     }
 
     /**
@@ -104,7 +136,7 @@ class P2pool extends utils.Adapter {
             // clearTimeout(timeout1);
             // clearTimeout(timeout2);
             // ...
-            // clearInterval(interval1);
+            this.clearInterval(this.refreshInterval);
 
             callback();
         } catch (e) {

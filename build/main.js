@@ -33,6 +33,7 @@ class P2pool extends utils.Adapter {
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
+  refreshInterval = void 0;
   /**
    * create URL
    * /api/pool_info
@@ -47,41 +48,37 @@ class P2pool extends utils.Adapter {
    */
   genURL(Command, SearchLimit) {
     let retVal = "";
+    let url = "";
+    if (this.config.mini_pool) {
+      url = `mini.p2pool.observer`;
+    } else {
+      url = `p2pool.observer`;
+    }
     if (Command === "") {
       this.log.error("Command is empty");
       return retVal;
     } else if (Command === "miner_info") {
-      retVal = `https://p2pool.observer/api/${Command}/${this.config.monero_key}`;
+      retVal = `https://${url}/api/${Command}/${this.config.monero_key}`;
     } else if (Command === "pool_info") {
-      retVal = `https://p2pool.observer/api/${Command}`;
+      retVal = `https://${url}/api/${Command}`;
     } else if (Command === "payouts") {
-      retVal = `https://p2pool.observer/api/${Command}/${this.config.monero_key}?search_limit=${SearchLimit}`;
+      retVal = `https://${url}/api/${Command}/${this.config.monero_key}?search_limit=${SearchLimit}`;
     } else {
       this.log.error(`Unknown command: ${Command}`);
     }
     return retVal;
   }
-  /**
-   * Is called when databases are connected and adapter received configuration.
-   */
-  async onReady() {
-    let reqUrl = this.genURL("pool_info", "0");
+  async readMinerInfo() {
+    let reqUrl = this.genURL("miner_info", "0");
     this.log.debug(reqUrl);
-    import_axios.default.get(reqUrl).then(async (res) => {
-      this.log.debug(JSON.stringify(res.data));
-      let jsonData = null;
-      let validJsonData = false;
-      if (res.data.toString().startsWith("{XC_SUC}")) {
-        jsonData = JSON.parse(res.data.substring(8));
-        validJsonData = true;
-      } else if (JSON.stringify(res.data).startsWith('{"XC_SUC":[')) {
-        jsonData = res.data.XC_SUC;
-        validJsonData = true;
-      } else {
-        jsonData = [];
-      }
+    let jsonData = null;
+    let validJsonData = false;
+    await import_axios.default.get(reqUrl).then(async (res) => {
+      jsonData = res.data;
+      validJsonData = true;
       if (validJsonData) {
         try {
+          this.log.info(`p2pool response: ${JSON.stringify(jsonData)}`);
         } catch (error) {
           if (error instanceof Error) {
             this.log.error(error.message);
@@ -89,21 +86,49 @@ class P2pool extends utils.Adapter {
           this.log.error(`json format invalid:${JSON.stringify(jsonData)}`);
         }
       } else {
-        this.log.error(`mediola device rejected the request: ${res.data.toString()}`);
+        this.log.error(`p2pool rejected the request: ${res.data.toString()}`);
       }
     }).catch((error) => {
       if (error instanceof Error) {
         this.log.error(error.message);
       }
-      this.log.error("mediola device not reached by getting sys vars");
+      this.log.error("p2pool request failed.");
     });
+    if (validJsonData && jsonData !== null) {
+      return jsonData;
+    } else {
+      this.log.error("No valid JSON data received from p2pool.");
+      return JSON.parse("{}");
+    }
+  }
+  /**
+   * Callback function for the interval
+   */
+  updateP2pool = async () => {
+    this.log.debug("Callback function called");
+    let jsonData = await this.readMinerInfo();
+    this.log.info(`p2pool response after callback: ${JSON.stringify(jsonData)}`);
+    if (jsonData && Object.keys(jsonData).length > 0) {
+      this.log.info(`Received data: ${JSON.stringify(jsonData)}`);
+    }
+  };
+  /**
+   * Is called when databases are connected and adapter received configuration.
+   */
+  async onReady() {
+    let reqUrl = this.genURL("miner_info", "0");
+    this.log.debug(reqUrl);
     this.log.info("config monero key: " + this.config.monero_key);
+    this.log.info("starting p2pool observer adapter...");
+    this.updateP2pool();
+    this.refreshInterval = this.setInterval(this.updateP2pool, 12e4);
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!
    */
   onUnload(callback) {
     try {
+      this.clearInterval(this.refreshInterval);
       callback();
     } catch (e) {
       callback();
