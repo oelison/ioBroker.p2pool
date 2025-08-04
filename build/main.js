@@ -47,9 +47,9 @@ class P2pool extends utils.Adapter {
    * /api/block_by_height/<blockHeight>[/full|/light|/raw|/info|/payouts|/coinbase]
    *
    * @param Command - The command to execute, e.g., see list above
-   * @param SearchLimit - The search limit for payouts, e.g., 0 for all, 10 is default
+   * @param Limit - The search limit for payouts, e.g., 0 for all, 10 is default
    */
-  genURL(Command, SearchLimit) {
+  genURL(Command, Limit) {
     let retVal = "";
     let url = "";
     if (this.config.mini_pool) {
@@ -65,32 +65,24 @@ class P2pool extends utils.Adapter {
     } else if (Command === "pool_info") {
       retVal = `https://${url}/api/${Command}`;
     } else if (Command === "payouts") {
-      retVal = `https://${url}/api/${Command}/${this.config.monero_key}?search_limit=${SearchLimit}`;
+      retVal = `https://${url}/api/${Command}/${this.config.monero_key}?limit=${Limit}`;
+    } else if (Command === "found_blocks") {
+      retVal = `https://${url}/api/${Command}?limit=${Limit}&miner=${this.config.monero_key}`;
+    } else if (Command === "shares") {
+      retVal = `https://${url}/api/${Command}?limit=${Limit}&miner=${this.config.monero_key}`;
     } else {
       this.log.error(`Unknown command: ${Command}`);
     }
     return retVal;
   }
-  async readMinerInfo() {
-    const reqUrl = this.genURL("miner_info", "0");
+  async readP2Pool(Command, Limit) {
+    const reqUrl = this.genURL(Command, Limit);
     this.log.debug(reqUrl);
     let jsonData = null;
     let validJsonData = false;
     await import_axios.default.get(reqUrl).then((res) => {
       jsonData = res.data;
       validJsonData = true;
-      if (validJsonData) {
-        try {
-          this.log.info(`p2pool response: ${JSON.stringify(jsonData)}`);
-        } catch (error) {
-          if (error instanceof Error) {
-            this.log.error(error.message);
-          }
-          this.log.error(`json format invalid:${JSON.stringify(jsonData)}`);
-        }
-      } else {
-        this.log.error(`p2pool rejected the request: ${res.data.toString()}`);
-      }
     }).catch((error) => {
       if (error instanceof Error) {
         this.log.error(error.message);
@@ -100,7 +92,7 @@ class P2pool extends utils.Adapter {
     if (validJsonData && jsonData !== null) {
       return jsonData;
     }
-    this.log.error("No valid JSON data received from p2pool.");
+    this.log.error(`No valid JSON data received from p2pool by fetching ${Command} with limit ${Limit}`);
     return JSON.parse("{}");
   }
   /**
@@ -108,11 +100,60 @@ class P2pool extends utils.Adapter {
    */
   updateP2pool = async () => {
     this.log.debug("Callback function called");
-    const jsonData = await this.readMinerInfo();
-    this.log.info(`p2pool response after callback: ${JSON.stringify(jsonData)}`);
-    if (jsonData && Object.keys(jsonData).length > 0) {
-      this.log.info(`Received data: ${JSON.stringify(jsonData)}`);
+    const minerInfoData = await this.readP2Pool("miner_info", "0");
+    const poolInfoData = await this.readP2Pool("pool_info", "0");
+    const payoutsData = await this.readP2Pool("payouts", "1");
+    const foundBlocksData = await this.readP2Pool("found_blocks", "1");
+    const sharesData = await this.readP2Pool("shares", "1");
+    this.log.debug(`p2pool response after callback miner_info: ${JSON.stringify(minerInfoData)}`);
+    this.log.debug(`p2pool response after callback pool_info: ${JSON.stringify(poolInfoData)}`);
+    this.log.debug(`p2pool response after callback payouts: ${JSON.stringify(payoutsData)}`);
+    this.log.debug(`p2pool response after callback found_blocks: ${JSON.stringify(foundBlocksData)}`);
+    this.log.debug(`p2pool response after callback shares: ${JSON.stringify(sharesData)}`);
+    if (minerInfoData && Object.keys(minerInfoData).length > 0) {
+      await this.setState("raw.miner_info", JSON.stringify(minerInfoData), true);
+      if (minerInfoData.last_share_height) {
+        await this.setState("details.miner_info.last_share_height", minerInfoData.last_share_height, true);
+      }
+      if (minerInfoData.last_share_timestamp) {
+        await this.setState(
+          "details.miner_info.last_share_timestamp",
+          minerInfoData.last_share_timestamp,
+          true
+        );
+      }
     }
+    if (poolInfoData && Object.keys(poolInfoData).length > 0) {
+      await this.setState("raw.pool_info", JSON.stringify(poolInfoData), true);
+    }
+    if (payoutsData && Object.keys(payoutsData).length > 0) {
+      await this.setState("raw.payouts", JSON.stringify(payoutsData), true);
+      if (payoutsData[0].timestamp) {
+        await this.setState("details.payouts.timestamp", payoutsData[0].timestamp, true);
+      }
+      if (payoutsData[0].coinbase_reward) {
+        await this.setState("details.payouts.coinbase_reward", payoutsData[0].coinbase_reward, true);
+      }
+    }
+    if (foundBlocksData && Object.keys(foundBlocksData).length > 0) {
+      await this.setState("raw.found_blocks", JSON.stringify(foundBlocksData), true);
+    }
+    if (sharesData && Object.keys(sharesData).length > 0) {
+      await this.setState("raw.shares", JSON.stringify(sharesData), true);
+      if (sharesData[0].software_version) {
+        await this.setState("details.shares.software_version", sharesData[0].software_version, true);
+        const softwareVersion = sharesData[0].software_version;
+        const major = softwareVersion >> 16 & 65535;
+        const minor = softwareVersion >> 8 & 255;
+        const patch = softwareVersion & 255;
+        const softwareVersionName = `${major}.${minor}.${patch}`;
+        await this.setState("details.shares.software_version_name", softwareVersionName, true);
+      }
+      if (sharesData[0].difficulty) {
+        await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
+      }
+    }
+    this.log.debug("p2pool data update completed");
   };
   /**
    * Is called when databases are connected and adapter received configuration.
@@ -123,6 +164,150 @@ class P2pool extends utils.Adapter {
     this.log.debug(reqUrl);
     this.log.info(`config monero key: ${this.config.monero_key}`);
     this.log.info("starting p2pool observer adapter...");
+    void this.setObjectNotExists("info.connection", {
+      type: "state",
+      common: {
+        name: "Connection status",
+        type: "boolean",
+        role: "indicator.connected",
+        read: true,
+        write: false,
+        def: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw.miner_info", {
+      type: "state",
+      common: {
+        name: "Raw Miner Info",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw.pool_info", {
+      type: "state",
+      common: {
+        name: "Raw Pool Info",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw.payouts", {
+      type: "state",
+      common: {
+        name: "Raw Payouts",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw.found_blocks", {
+      type: "state",
+      common: {
+        name: "Raw Found Blocks",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw.shares", {
+      type: "state",
+      common: {
+        name: "Raw Shares",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.miner_info.last_share_height", {
+      type: "state",
+      common: {
+        name: "Miner Info",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.miner_info.last_share_timestamp", {
+      type: "state",
+      common: {
+        name: "Miner Info",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.payouts.timestamp", {
+      type: "state",
+      common: {
+        name: "Miner ID",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.payouts.coinbase_reward", {
+      type: "state",
+      common: {
+        name: "Coinbase Reward",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.shares.software_version", {
+      type: "state",
+      common: {
+        name: "Main ID",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.shares.software_version_name", {
+      type: "state",
+      common: {
+        name: "Software Version Name",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.shares.difficulty", {
+      type: "state",
+      common: {
+        name: "Difficulty",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
     await this.updateP2pool();
     this.refreshInterval = this.setInterval(this.updateP2pool, 12e4);
     await this.setState("info.connection", true, true);
