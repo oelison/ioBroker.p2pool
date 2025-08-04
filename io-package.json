@@ -43,8 +43,14 @@
             "uk": "Спостереження за видобутком Monero від P2Pool",
             "zh-cn": "观察来自P2Pool的Monero开采"
         },
-        "authors": ["oelison <p2pooliobroker@sciphy.de>"],
-        "keywords": ["monero", "p2pool", "mining"],
+        "authors": [
+            "oelison <p2pooliobroker@sciphy.de>"
+        ],
+        "keywords": [
+            "monero",
+            "p2pool",
+            "mining"
+        ],
         "licenseInformation": {
             "type": "free",
             "license": "MIT"

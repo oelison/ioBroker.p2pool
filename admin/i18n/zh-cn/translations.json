@@ -1,3 +1,7 @@
 {
-    "p2pool adapter settings": "p2pool的适配器设置"
+    "p2pool adapter settings": "p2pool的适配器设置",
+    "helpMoneroKey": "在此处输入您的Monero Wallet键。这是P2Pool正确运行所必需的。",
+    "moneroKey": "monero键",
+    "helpMiniPool": "使用迷你池配置时启用此选项。",
+    "miniPool": "迷你池"
 }

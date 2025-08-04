@@ -1,3 +1,7 @@
 {
-    "p2pool adapter settings": "Adaptereinstellungen für p2pool"
+    "p2pool adapter settings": "Adaptereinstellungen für p2pool",
+    "helpMoneroKey": "Geben Sie hier Ihren Monero -Brieftaschenschlüssel ein. Dies ist erforderlich, damit die P2pool korrekt funktioniert.",
+    "moneroKey": "Monero Key",
+    "miniPool": "Mini -Pool",
+    "helpMiniPool": "Aktivieren Sie diese Option, wenn Sie eine Mini -Pool -Konfiguration verwenden."
 }

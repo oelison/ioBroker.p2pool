@@ -1,3 +1,7 @@
 {
-    "p2pool adapter settings": "Налаштування адаптера для p2pool"
+    "p2pool adapter settings": "Налаштування адаптера для p2pool",
+    "helpMoneroKey": "Введіть тут свій ключ Monero Wallet. Це потрібно для правильного функціонування P2Pool.",
+    "moneroKey": "Monero Key",
+    "helpMiniPool": "Увімкніть цю опцію, коли ви використовуєте конфігурацію міні -пулу.",
+    "miniPool": "Міні -басейн"
 }

@@ -1,3 +1,7 @@
 {
-    "p2pool adapter settings": "Paramètres d'adaptateur pour p2pool"
+    "p2pool adapter settings": "Paramètres d'adaptateur pour p2pool",
+    "helpMoneroKey": "Entrez ici votre clé de portefeuille Monero. Ceci est requis pour que le p2pool fonctionne correctement.",
+    "moneroKey": "Touche monero",
+    "helpMiniPool": "Activez cette option lorsque vous utilisez une mini-configuration de pool.",
+    "miniPool": "Mini piscine"
 }

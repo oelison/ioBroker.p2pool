@@ -1,3 +1,7 @@
 {
-    "p2pool adapter settings": "Adapterinstellingen voor p2pool"
+    "p2pool adapter settings": "Adapterinstellingen voor p2pool",
+    "helpMoneroKey": "Voer hier uw Monero Wallet -toets in. Dit is vereist voor de p2pool om correct te functioneren.",
+    "moneroKey": "Monero -sleutel",
+    "helpMiniPool": "Schakel deze optie in wanneer u een mini -poolconfiguratie gebruikt.",
+    "miniPool": "Mini -pool"
 }
