@@ -99,6 +99,11 @@ class P2pool extends utils.Adapter {
    * Callback function for the interval
    */
   updateP2pool = async () => {
+    const miner_address = this.config.monero_key;
+    if (!miner_address || miner_address === "") {
+      this.log.error("Monero key is not set. Please configure the Monero key in the adapter settings.");
+      return;
+    }
     this.log.debug("Callback function called");
     const minerInfoData = await this.readP2Pool("miner_info", "0");
     const poolInfoData = await this.readP2Pool("pool_info", "0");

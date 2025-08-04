@@ -266,6 +266,11 @@ class P2pool extends utils.Adapter {
      * Callback function for the interval
      */
     private updateP2pool = async (): Promise<void> => {
+        const miner_address = this.config.monero_key;
+        if (!miner_address || miner_address === "") {
+            this.log.error("Monero key is not set. Please configure the Monero key in the adapter settings.");
+            return;
+        }
         // This function will be called every 2 seconds
         this.log.debug("Callback function called");
         // You can add your logic here, e.g., fetching data from an API
