@@ -1,6 +1,6 @@
 {
   "name": "iobroker.p2pool",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "observing monero mining from p2pool",
   "author": {
     "name": "oelison",

@@ -21,8 +21,7 @@ observing monero mining from p2pool
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.0.0 (2025-08-04)
 
 - (oelison) initial release
 - (oelison) first values are shown.
