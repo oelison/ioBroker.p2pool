@@ -5,8 +5,10 @@
  * It is advised to test all your modules with accompanying *.test.ts-files
  */
 
-import { expect } from "chai";
+import { expect, should } from "chai";
 // import { functionToTest } from "./moduleToTest";
+
+should(); // Initialize chai's should interface
 
 describe("module to test => function to test", () => {
     // initializing logic
@@ -17,7 +19,8 @@ describe("module to test => function to test", () => {
         // assign result a value from functionToTest
         expect(result).to.equal(expected);
         // or using the should() syntax
-        result.should.equal(expected);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        Object(result).should.equal(expected);
     });
     // ... more tests => it
 });
