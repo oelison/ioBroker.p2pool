@@ -25,6 +25,8 @@ observing monero mining from p2pool
 ### **WORK IN PROGRESS**
 
 - (oelison) initial release
+- (oelison) first values are shown.
+- (oelison) version check added
 
 ## License
 

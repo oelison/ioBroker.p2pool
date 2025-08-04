@@ -125,6 +125,44 @@ class P2pool extends utils.Adapter {
     }
     if (poolInfoData && Object.keys(poolInfoData).length > 0) {
       await this.setState("raw.pool_info", JSON.stringify(poolInfoData), true);
+      if (poolInfoData.sidechain && poolInfoData.sidechain.last_block && poolInfoData.sidechain.last_block.software_version) {
+        await this.setState(
+          "details.pool_info.last_block.software_version",
+          poolInfoData.sidechain.last_block.software_version,
+          true
+        );
+        if (poolInfoData.sidechain.last_block.software_version) {
+          const softwareVersion = poolInfoData.sidechain.last_block.software_version;
+          const major = softwareVersion >> 16 & 65535;
+          const minor = softwareVersion >> 8 & 255;
+          const patch = softwareVersion & 255;
+          const softwareVersionName = `${major}.${minor}.${patch}`;
+          await this.setState(
+            "details.pool_info.last_block.software_version_name",
+            softwareVersionName,
+            true
+          );
+        }
+        if (poolInfoData.versions.p2pool.version) {
+          let p2poolVersion = poolInfoData.versions.p2pool.version;
+          const myLastVersion = await this.getStateAsync("details.shares.software_version_name");
+          if (myLastVersion && myLastVersion.val !== null) {
+            if (typeof myLastVersion.val === "string" && myLastVersion.val.endsWith(".0")) {
+              p2poolVersion = `${p2poolVersion}.0`;
+              const myLastVersionVal = `v${myLastVersion.val}`;
+              if (p2poolVersion === myLastVersionVal) {
+                await this.setState("details.calculated.version_missmatch", false, true);
+                this.log.debug(`P2Pool version matches: ${p2poolVersion}`);
+              } else {
+                await this.setState("details.calculated.version_missmatch", true, true);
+                this.log.warn(
+                  `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`
+                );
+              }
+            }
+          }
+        }
+      }
     }
     if (payoutsData && Object.keys(payoutsData).length > 0) {
       await this.setState("raw.payouts", JSON.stringify(payoutsData), true);
@@ -308,6 +346,39 @@ class P2pool extends utils.Adapter {
       },
       native: {}
     });
+    void this.setObjectNotExists("details.pool_info.last_block.software_version", {
+      type: "state",
+      common: {
+        name: "Last Block Software Version",
+        type: "number",
+        role: "value",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.pool_info.last_block.software_version_name", {
+      type: "state",
+      common: {
+        name: "Last Block Software Version Name",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.calculated.version_missmatch", {
+      type: "state",
+      common: {
+        name: "Version Missmatch",
+        type: "boolean",
+        role: "indicator",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
     await this.updateP2pool();
     this.refreshInterval = this.setInterval(this.updateP2pool, 12e4);
     await this.setState("info.connection", true, true);
@@ -328,20 +399,6 @@ class P2pool extends utils.Adapter {
       callback();
     }
   }
-  // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
-  // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-  // /**
-  //  * Is called if a subscribed object changes
-  //  */
-  // private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-  //     if (obj) {
-  //         // The object was changed
-  //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-  //     } else {
-  //         // The object was deleted
-  //         this.log.info(`object ${id} deleted`);
-  //     }
-  // }
   /**
    * Is called if a subscribed state changes
    *
@@ -355,21 +412,6 @@ class P2pool extends utils.Adapter {
       this.log.info(`state ${id} deleted`);
     }
   }
-  // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
-  // /**
-  //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-  //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
-  //  */
-  // private onMessage(obj: ioBroker.Message): void {
-  //     if (typeof obj === "object" && obj.message) {
-  //         if (obj.command === "send") {
-  //             // e.g. send email or pushover or whatever
-  //             this.log.info("send command");
-  //             // Send response in callback if required
-  //             if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-  //         }
-  //     }
-  // }
 }
 if (require.main !== module) {
   module.exports = (options) => new P2pool(options);
