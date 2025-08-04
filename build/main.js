@@ -115,6 +115,21 @@ class P2pool extends utils.Adapter {
     this.log.debug(`p2pool response after callback payouts: ${JSON.stringify(payoutsData)}`);
     this.log.debug(`p2pool response after callback found_blocks: ${JSON.stringify(foundBlocksData)}`);
     this.log.debug(`p2pool response after callback shares: ${JSON.stringify(sharesData)}`);
+    if (sharesData && Object.keys(sharesData).length > 0) {
+      await this.setState("raw.shares", JSON.stringify(sharesData), true);
+      if (sharesData[0].software_version) {
+        await this.setState("details.shares.software_version", sharesData[0].software_version, true);
+        const softwareVersion = sharesData[0].software_version;
+        const major = softwareVersion >> 16 & 65535;
+        const minor = softwareVersion >> 8 & 255;
+        const patch = softwareVersion & 255;
+        const softwareVersionName = `${major}.${minor}.${patch}`;
+        await this.setState("details.shares.software_version_name", softwareVersionName, true);
+      }
+      if (sharesData[0].difficulty) {
+        await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
+      }
+    }
     if (minerInfoData && Object.keys(minerInfoData).length > 0) {
       await this.setState("raw.miner_info", JSON.stringify(minerInfoData), true);
       if (minerInfoData.last_share_height) {
@@ -180,21 +195,6 @@ class P2pool extends utils.Adapter {
     }
     if (foundBlocksData && Object.keys(foundBlocksData).length > 0) {
       await this.setState("raw.found_blocks", JSON.stringify(foundBlocksData), true);
-    }
-    if (sharesData && Object.keys(sharesData).length > 0) {
-      await this.setState("raw.shares", JSON.stringify(sharesData), true);
-      if (sharesData[0].software_version) {
-        await this.setState("details.shares.software_version", sharesData[0].software_version, true);
-        const softwareVersion = sharesData[0].software_version;
-        const major = softwareVersion >> 16 & 65535;
-        const minor = softwareVersion >> 8 & 255;
-        const patch = softwareVersion & 255;
-        const softwareVersionName = `${major}.${minor}.${patch}`;
-        await this.setState("details.shares.software_version_name", softwareVersionName, true);
-      }
-      if (sharesData[0].difficulty) {
-        await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
-      }
     }
     this.log.debug("p2pool data update completed");
   };

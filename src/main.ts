@@ -284,6 +284,23 @@ class P2pool extends utils.Adapter {
         this.log.debug(`p2pool response after callback payouts: ${JSON.stringify(payoutsData)}`);
         this.log.debug(`p2pool response after callback found_blocks: ${JSON.stringify(foundBlocksData)}`);
         this.log.debug(`p2pool response after callback shares: ${JSON.stringify(sharesData)}`);
+        if (sharesData && Object.keys(sharesData).length > 0) {
+            await this.setState("raw.shares", JSON.stringify(sharesData), true);
+            // Set additional details from shares
+            if (sharesData[0].software_version) {
+                await this.setState("details.shares.software_version", sharesData[0].software_version, true);
+                // Convert software version to human-readable format
+                const softwareVersion = sharesData[0].software_version;
+                const major = (softwareVersion >> 16) & 0xffff;
+                const minor = (softwareVersion >> 8) & 0xff;
+                const patch = softwareVersion & 0xff;
+                const softwareVersionName = `${major}.${minor}.${patch}`;
+                await this.setState("details.shares.software_version_name", softwareVersionName, true);
+            }
+            if (sharesData[0].difficulty) {
+                await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
+            }
+        }
         if (minerInfoData && Object.keys(minerInfoData).length > 0) {
             await this.setState("raw.miner_info", JSON.stringify(minerInfoData), true);
             // Set additional details from miner_info
@@ -357,23 +374,6 @@ class P2pool extends utils.Adapter {
         }
         if (foundBlocksData && Object.keys(foundBlocksData).length > 0) {
             await this.setState("raw.found_blocks", JSON.stringify(foundBlocksData), true);
-        }
-        if (sharesData && Object.keys(sharesData).length > 0) {
-            await this.setState("raw.shares", JSON.stringify(sharesData), true);
-            // Set additional details from shares
-            if (sharesData[0].software_version) {
-                await this.setState("details.shares.software_version", sharesData[0].software_version, true);
-                // Convert software version to human-readable format
-                const softwareVersion = sharesData[0].software_version;
-                const major = (softwareVersion >> 16) & 0xffff;
-                const minor = (softwareVersion >> 8) & 0xff;
-                const patch = softwareVersion & 0xff;
-                const softwareVersionName = `${major}.${minor}.${patch}`;
-                await this.setState("details.shares.software_version_name", softwareVersionName, true);
-            }
-            if (sharesData[0].difficulty) {
-                await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
-            }
         }
         this.log.debug("p2pool data update completed");
     };
