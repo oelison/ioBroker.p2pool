@@ -5,12 +5,12 @@
  * It is advised to test all your modules with accompanying *.test.ts-files
  */
 
-import { expect, should } from "chai";
+import { expect, should } from 'chai';
 // import { functionToTest } from "./moduleToTest";
 
 should(); // Initialize chai's should interface
 
-describe("module to test => function to test", () => {
+describe('module to test => function to test', () => {
     // initializing logic
     const expected = 5;
 

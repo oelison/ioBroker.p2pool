@@ -4,8 +4,8 @@
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
-import * as utils from "@iobroker/adapter-core";
-import axios from "axios";
+import * as utils from '@iobroker/adapter-core';
+import axios from 'axios';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -186,13 +186,13 @@ class P2pool extends utils.Adapter {
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
-            name: "p2pool",
+            name: 'p2pool',
         });
-        this.on("ready", this.onReady.bind(this));
-        this.on("stateChange", this.onStateChange.bind(this));
+        this.on('ready', this.onReady.bind(this));
+        // this.on('stateChange', this.onStateChange.bind(this));
         // this.on("objectChange", this.onObjectChange.bind(this));
         // this.on("message", this.onMessage.bind(this));
-        this.on("unload", this.onUnload.bind(this));
+        this.on('unload', this.onUnload.bind(this));
     }
     refreshInterval: ioBroker.Interval | undefined = undefined;
     /**
@@ -211,25 +211,25 @@ class P2pool extends utils.Adapter {
      * @param Limit - The search limit for payouts, e.g., 0 for all, 10 is default
      */
     private genURL(Command: string, Limit: string): string {
-        let retVal = "";
-        let url = "";
+        let retVal = '';
+        let url = '';
         if (this.config.mini_pool) {
             url = `mini.p2pool.observer`;
         } else {
             url = `p2pool.observer`;
         }
-        if (Command === "") {
-            this.log.error("Command is empty");
+        if (Command === '') {
+            this.log.error('Command is empty');
             return retVal;
-        } else if (Command === "miner_info") {
+        } else if (Command === 'miner_info') {
             retVal = `https://${url}/api/${Command}/${this.config.monero_key}`;
-        } else if (Command === "pool_info") {
+        } else if (Command === 'pool_info') {
             retVal = `https://${url}/api/${Command}`;
-        } else if (Command === "payouts") {
+        } else if (Command === 'payouts') {
             retVal = `https://${url}/api/${Command}/${this.config.monero_key}?limit=${Limit}`;
-        } else if (Command === "found_blocks") {
+        } else if (Command === 'found_blocks') {
             retVal = `https://${url}/api/${Command}?limit=${Limit}&miner=${this.config.monero_key}`;
-        } else if (Command === "shares") {
+        } else if (Command === 'shares') {
             retVal = `https://${url}/api/${Command}?limit=${Limit}&miner=${this.config.monero_key}`;
         } else {
             this.log.error(`Unknown command: ${Command}`);
@@ -246,77 +246,77 @@ class P2pool extends utils.Adapter {
         let validJsonData = false;
         await axios
             .get(reqUrl)
-            .then((res) => {
+            .then(res => {
                 jsonData = res.data;
                 validJsonData = true;
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error instanceof Error) {
                     this.log.error(error.message);
                 }
-                this.log.error("p2pool request failed.");
+                this.log.error('p2pool request failed.');
             });
         if (validJsonData && jsonData !== null) {
             return jsonData;
         }
         this.log.error(`No valid JSON data received from p2pool by fetching ${Command} with limit ${Limit}`);
-        return JSON.parse("{}");
+        return JSON.parse('{}');
     }
     /**
      * Callback function for the interval
      */
     private updateP2pool = async (): Promise<void> => {
         const miner_address = this.config.monero_key;
-        if (!miner_address || miner_address === "") {
-            this.log.error("Monero key is not set. Please configure the Monero key in the adapter settings.");
+        if (!miner_address || miner_address === '') {
+            this.log.error('Monero key is not set. Please configure the Monero key in the adapter settings.');
             return;
         }
         // This function will be called every 2 seconds
-        this.log.debug("Callback function called");
+        this.log.debug('Callback function called');
         // You can add your logic here, e.g., fetching data from an API
-        const minerInfoData: MinerInfo = (await this.readP2Pool("miner_info", "0")) as unknown as MinerInfo;
-        const poolInfoData: PoolInfo = (await this.readP2Pool("pool_info", "0")) as unknown as PoolInfo;
-        const payoutsData: Payout[] = (await this.readP2Pool("payouts", "1")) as unknown as Payout[];
-        const foundBlocksData = await this.readP2Pool("found_blocks", "1");
-        const sharesData: Share[] = (await this.readP2Pool("shares", "1")) as unknown as Share[];
+        const minerInfoData: MinerInfo = (await this.readP2Pool('miner_info', '0')) as unknown as MinerInfo;
+        const poolInfoData: PoolInfo = (await this.readP2Pool('pool_info', '0')) as unknown as PoolInfo;
+        const payoutsData: Payout[] = (await this.readP2Pool('payouts', '1')) as unknown as Payout[];
+        const foundBlocksData = await this.readP2Pool('found_blocks', '1');
+        const sharesData: Share[] = (await this.readP2Pool('shares', '1')) as unknown as Share[];
         this.log.debug(`p2pool response after callback miner_info: ${JSON.stringify(minerInfoData)}`);
         this.log.debug(`p2pool response after callback pool_info: ${JSON.stringify(poolInfoData)}`);
         this.log.debug(`p2pool response after callback payouts: ${JSON.stringify(payoutsData)}`);
         this.log.debug(`p2pool response after callback found_blocks: ${JSON.stringify(foundBlocksData)}`);
         this.log.debug(`p2pool response after callback shares: ${JSON.stringify(sharesData)}`);
         if (sharesData && Object.keys(sharesData).length > 0) {
-            await this.setState("raw.shares", JSON.stringify(sharesData), true);
+            await this.setState('raw.shares', JSON.stringify(sharesData), true);
             // Set additional details from shares
             if (sharesData[0].software_version) {
-                await this.setState("details.shares.software_version", sharesData[0].software_version, true);
+                await this.setState('details.shares.software_version', sharesData[0].software_version, true);
                 // Convert software version to human-readable format
                 const softwareVersion = sharesData[0].software_version;
                 const major = (softwareVersion >> 16) & 0xffff;
                 const minor = (softwareVersion >> 8) & 0xff;
                 const patch = softwareVersion & 0xff;
                 const softwareVersionName = `${major}.${minor}.${patch}`;
-                await this.setState("details.shares.software_version_name", softwareVersionName, true);
+                await this.setState('details.shares.software_version_name', softwareVersionName, true);
             }
             if (sharesData[0].difficulty) {
-                await this.setState("details.shares.difficulty", sharesData[0].difficulty, true);
+                await this.setState('details.shares.difficulty', sharesData[0].difficulty, true);
             }
         }
         if (minerInfoData && Object.keys(minerInfoData).length > 0) {
-            await this.setState("raw.miner_info", JSON.stringify(minerInfoData), true);
+            await this.setState('raw.miner_info', JSON.stringify(minerInfoData), true);
             // Set additional details from miner_info
             if (minerInfoData.last_share_height) {
-                await this.setState("details.miner_info.last_share_height", minerInfoData.last_share_height, true);
+                await this.setState('details.miner_info.last_share_height', minerInfoData.last_share_height, true);
             }
             if (minerInfoData.last_share_timestamp) {
                 await this.setState(
-                    "details.miner_info.last_share_timestamp",
+                    'details.miner_info.last_share_timestamp',
                     minerInfoData.last_share_timestamp,
                     true,
                 );
             }
         }
         if (poolInfoData && Object.keys(poolInfoData).length > 0) {
-            await this.setState("raw.pool_info", JSON.stringify(poolInfoData), true);
+            await this.setState('raw.pool_info', JSON.stringify(poolInfoData), true);
             // Set additional details from pool_info
             if (
                 poolInfoData.sidechain &&
@@ -324,7 +324,7 @@ class P2pool extends utils.Adapter {
                 poolInfoData.sidechain.last_block.software_version
             ) {
                 await this.setState(
-                    "details.pool_info.last_block.software_version",
+                    'details.pool_info.last_block.software_version',
                     poolInfoData.sidechain.last_block.software_version,
                     true,
                 );
@@ -336,23 +336,23 @@ class P2pool extends utils.Adapter {
                     const patch = softwareVersion & 0xff;
                     const softwareVersionName = `${major}.${minor}.${patch}`;
                     await this.setState(
-                        "details.pool_info.last_block.software_version_name",
+                        'details.pool_info.last_block.software_version_name',
                         softwareVersionName,
                         true,
                     );
                 }
                 if (poolInfoData.versions.p2pool.version) {
                     let p2poolVersion = poolInfoData.versions.p2pool.version;
-                    const myLastVersion = await this.getStateAsync("details.shares.software_version_name");
+                    const myLastVersion = await this.getStateAsync('details.shares.software_version_name');
                     if (myLastVersion && myLastVersion.val !== null) {
-                        if (typeof myLastVersion.val === "string" && myLastVersion.val.endsWith(".0")) {
+                        if (typeof myLastVersion.val === 'string' && myLastVersion.val.endsWith('.0')) {
                             p2poolVersion = `${p2poolVersion}.0`; // Ensure the version format matches
                             const myLastVersionVal = `v${myLastVersion.val}`;
                             if (p2poolVersion === myLastVersionVal) {
-                                await this.setState("details.calculated.version_missmatch", false, true);
+                                await this.setState('details.calculated.version_missmatch', false, true);
                                 this.log.debug(`P2Pool version matches: ${p2poolVersion}`);
                             } else {
-                                await this.setState("details.calculated.version_missmatch", true, true);
+                                await this.setState('details.calculated.version_missmatch', true, true);
                                 this.log.warn(
                                     `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`,
                                 );
@@ -363,95 +363,96 @@ class P2pool extends utils.Adapter {
             }
         }
         if (payoutsData && Object.keys(payoutsData).length > 0) {
-            await this.setState("raw.payouts", JSON.stringify(payoutsData), true);
+            await this.setState('raw.payouts', JSON.stringify(payoutsData), true);
             // Set additional details from payouts
             if (payoutsData[0].timestamp) {
-                await this.setState("details.payouts.timestamp", payoutsData[0].timestamp, true);
+                await this.setState('details.payouts.timestamp', payoutsData[0].timestamp, true);
             }
             if (payoutsData[0].coinbase_reward) {
-                await this.setState("details.payouts.coinbase_reward", payoutsData[0].coinbase_reward, true);
+                await this.setState('details.payouts.coinbase_reward', payoutsData[0].coinbase_reward, true);
             }
         }
         if (foundBlocksData && Object.keys(foundBlocksData).length > 0) {
-            await this.setState("raw.found_blocks", JSON.stringify(foundBlocksData), true);
+            await this.setState('raw.found_blocks', JSON.stringify(foundBlocksData), true);
         }
-        this.log.debug("p2pool data update completed");
+        this.log.debug('p2pool data update completed');
     };
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
-        await this.setState("info.connection", false, true);
+        await this.setState('info.connection', false, true);
         // Initialize your adapter here
-        const reqUrl = this.genURL("miner_info", "0");
+        const reqUrl = this.genURL('miner_info', '0');
         this.log.debug(reqUrl);
 
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
+        // This log is okay, because the monero_key is not sensitive data. It is the public address of the miner.
         this.log.info(`config monero key: ${this.config.monero_key}`);
-        this.log.info("starting p2pool observer adapter...");
-        void this.setObjectNotExists("info.connection", {
-            type: "state",
+        this.log.info('starting p2pool observer adapter...');
+        void this.setObjectNotExists('info.connection', {
+            type: 'state',
             common: {
-                name: "Connection status",
-                type: "boolean",
-                role: "indicator.connected",
+                name: 'Connection status',
+                type: 'boolean',
+                role: 'indicator.connected',
                 read: true,
                 write: false,
                 def: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("raw.miner_info", {
-            type: "state",
+        void this.setObjectNotExists('raw.miner_info', {
+            type: 'state',
             common: {
-                name: "Raw Miner Info",
-                type: "string",
-                role: "json",
+                name: 'Raw Miner Info',
+                type: 'string',
+                role: 'json',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("raw.pool_info", {
-            type: "state",
+        void this.setObjectNotExists('raw.pool_info', {
+            type: 'state',
             common: {
-                name: "Raw Pool Info",
-                type: "string",
-                role: "json",
+                name: 'Raw Pool Info',
+                type: 'string',
+                role: 'json',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("raw.payouts", {
-            type: "state",
+        void this.setObjectNotExists('raw.payouts', {
+            type: 'state',
             common: {
-                name: "Raw Payouts",
-                type: "string",
-                role: "json",
+                name: 'Raw Payouts',
+                type: 'string',
+                role: 'json',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("raw.found_blocks", {
-            type: "state",
+        void this.setObjectNotExists('raw.found_blocks', {
+            type: 'state',
             common: {
-                name: "Raw Found Blocks",
-                type: "string",
-                role: "json",
+                name: 'Raw Found Blocks',
+                type: 'string',
+                role: 'json',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("raw.shares", {
-            type: "state",
+        void this.setObjectNotExists('raw.shares', {
+            type: 'state',
             common: {
-                name: "Raw Shares",
-                type: "string",
-                role: "json",
+                name: 'Raw Shares',
+                type: 'string',
+                role: 'json',
                 read: true,
                 write: false,
             },
@@ -481,23 +482,23 @@ class P2pool extends utils.Adapter {
         //   "last_share_height":11366313,
         //   "last_share_timestamp":1754230754
         //}
-        void this.setObjectNotExists("details.miner_info.last_share_height", {
-            type: "state",
+        void this.setObjectNotExists('details.miner_info.last_share_height', {
+            type: 'state',
             common: {
-                name: "Miner Info",
-                type: "number",
-                role: "value",
+                name: 'Miner Info',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.miner_info.last_share_timestamp", {
-            type: "state",
+        void this.setObjectNotExists('details.miner_info.last_share_timestamp', {
+            type: 'state',
             common: {
-                name: "Miner Info",
-                type: "number",
-                role: "value",
+                name: 'Miner Info',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
@@ -520,23 +521,23 @@ class P2pool extends utils.Adapter {
         //     "including_height":11357501
         //   }
         // ]
-        void this.setObjectNotExists("details.payouts.timestamp", {
-            type: "state",
+        void this.setObjectNotExists('details.payouts.timestamp', {
+            type: 'state',
             common: {
-                name: "Miner ID",
-                type: "number",
-                role: "value",
+                name: 'Miner ID',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.payouts.coinbase_reward", {
-            type: "state",
+        void this.setObjectNotExists('details.payouts.coinbase_reward', {
+            type: 'state',
             common: {
-                name: "Coinbase Reward",
-                type: "number",
-                role: "value",
+                name: 'Coinbase Reward',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
@@ -571,34 +572,34 @@ class P2pool extends utils.Adapter {
         //     "main_difficulty":690295196720
         //   }
         // ]
-        void this.setObjectNotExists("details.shares.software_version", {
-            type: "state",
+        void this.setObjectNotExists('details.shares.software_version', {
+            type: 'state',
             common: {
-                name: "Main ID",
-                type: "number",
-                role: "value",
+                name: 'Main ID',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.shares.software_version_name", {
-            type: "state",
+        void this.setObjectNotExists('details.shares.software_version_name', {
+            type: 'state',
             common: {
-                name: "Software Version Name",
-                type: "string",
-                role: "text",
+                name: 'Software Version Name',
+                type: 'string',
+                role: 'text',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.shares.difficulty", {
-            type: "state",
+        void this.setObjectNotExists('details.shares.difficulty', {
+            type: 'state',
             common: {
-                name: "Difficulty",
-                type: "number",
-                role: "value",
+                name: 'Difficulty',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
@@ -928,34 +929,34 @@ class P2pool extends utils.Adapter {
         //     }
         //   }
         // }
-        void this.setObjectNotExists("details.pool_info.last_block.software_version", {
-            type: "state",
+        void this.setObjectNotExists('details.pool_info.last_block.software_version', {
+            type: 'state',
             common: {
-                name: "Last Block Software Version",
-                type: "number",
-                role: "value",
+                name: 'Last Block Software Version',
+                type: 'number',
+                role: 'value',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.pool_info.last_block.software_version_name", {
-            type: "state",
+        void this.setObjectNotExists('details.pool_info.last_block.software_version_name', {
+            type: 'state',
             common: {
-                name: "Last Block Software Version Name",
-                type: "string",
-                role: "text",
+                name: 'Last Block Software Version Name',
+                type: 'string',
+                role: 'text',
                 read: true,
                 write: false,
             },
             native: {},
         });
-        void this.setObjectNotExists("details.calculated.version_missmatch", {
-            type: "state",
+        void this.setObjectNotExists('details.calculated.version_missmatch', {
+            type: 'state',
             common: {
-                name: "Version Missmatch",
-                type: "boolean",
-                role: "indicator",
+                name: 'Version Missmatch',
+                type: 'boolean',
+                role: 'indicator',
                 read: true,
                 write: false,
             },
@@ -963,7 +964,7 @@ class P2pool extends utils.Adapter {
         });
         await this.updateP2pool(); // Initial call to fetch data immediately
         this.refreshInterval = this.setInterval(this.updateP2pool, 120000); // 120 seconds
-        await this.setState("info.connection", true, true);
+        await this.setState('info.connection', true, true);
     }
 
     /**
@@ -988,21 +989,21 @@ class P2pool extends utils.Adapter {
         }
     }
 
-    /**
-     * Is called if a subscribed state changes
-     *
-     * @param id - the ID of the state that changed
-     * @param state - the state object
-     */
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        } else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
-        }
-    }
+    // /**
+    //  * Is called if a subscribed state changes
+    //  *
+    //  * @param id - the ID of the state that changed
+    //  * @param state - the state object
+    //  */
+    // private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+    //     if (state) {
+    //         // The state was changed
+    //         this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+    //     } else {
+    //         // The state was deleted
+    //         this.log.info(`state ${id} deleted`);
+    //     }
+    // }
 }
 
 if (require.main !== module) {

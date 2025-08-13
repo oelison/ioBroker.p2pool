@@ -13,7 +13,10 @@
 
 ## p2pool adapter for ioBroker
 
-observing monero mining from p2pool
+Observing monero mining from p2pool
+Simply add your monero mining address (public address) and the adapter will load your mining results into some objects from the p2pool site. [p2pool](https://p2pool.observer/)
+
+Miner alias or id is not working.
 
 ## Changelog
 
@@ -21,6 +24,12 @@ observing monero mining from p2pool
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (oelison) rework readme
+- (oelison) rework for process
+
 ### 1.0.0 (2025-08-04)
 
 - (oelison) initial release

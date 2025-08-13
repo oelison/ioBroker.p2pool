@@ -30,7 +30,6 @@ class P2pool extends utils.Adapter {
       name: "p2pool"
     });
     this.on("ready", this.onReady.bind(this));
-    this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
   refreshInterval = void 0;
@@ -404,19 +403,21 @@ class P2pool extends utils.Adapter {
       callback();
     }
   }
-  /**
-   * Is called if a subscribed state changes
-   *
-   * @param id - the ID of the state that changed
-   * @param state - the state object
-   */
-  onStateChange(id, state) {
-    if (state) {
-      this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-    } else {
-      this.log.info(`state ${id} deleted`);
-    }
-  }
+  // /**
+  //  * Is called if a subscribed state changes
+  //  *
+  //  * @param id - the ID of the state that changed
+  //  * @param state - the state object
+  //  */
+  // private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+  //     if (state) {
+  //         // The state was changed
+  //         this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+  //     } else {
+  //         // The state was deleted
+  //         this.log.info(`state ${id} deleted`);
+  //     }
+  // }
 }
 if (require.main !== module) {
   module.exports = (options) => new P2pool(options);

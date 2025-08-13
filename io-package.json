@@ -1,83 +1,83 @@
 {
-    "common": {
-        "name": "p2pool",
-        "version": "1.0.0",
-        "news": {
-            "1.0.0": {
-                "en": "initial release\nfirst values are shown.\nversion check added",
-                "de": "erstausstrahlung\nerste werte werden angezeigt.\nversionskontrolle hinzugefügt",
-                "ru": "первоначальное освобождение\nпоказаны первые значения.\nпроверка версии добавлена",
-                "pt": "libertação inicial\nos primeiros valores são mostrados.\nverificação de versão adicionada",
-                "nl": "eerste release\nde eerste waarden worden getoond.\nversiecontrole toegevoegd",
-                "fr": "libération initiale\nles premières valeurs sont affichées.\nvérification de la version ajoutée",
-                "it": "rilascio iniziale\nvengono mostrati i primi valori.\ncontrollo versione aggiunto",
-                "es": "liberación inicial\nse muestran los primeros valores.\nverificación de la versión",
-                "pl": "początkowe zwolnienie\npokazane są pierwsze wartości.\nversion check added",
-                "uk": "початковий реліз\nпоказані перші значення.\nперевірка версії додано",
-                "zh-cn": "初步释放\n显示第一个值.\n添加版本检查"
-            }
-        },
-        "titleLang": {
-            "en": "p2pool",
-            "de": "p2pool",
-            "ru": "P2Pool",
-            "pt": "P2POOL",
-            "nl": "p2pool",
-            "fr": "p2pool",
-            "it": "p2pool",
-            "es": "P2Pool",
-            "pl": "p2pool",
-            "uk": "P2pool",
-            "zh-cn": "P2Pool"
-        },
-        "desc": {
-            "en": "observing monero mining from p2pool",
-            "de": "Beobachten Sie den Monero -Bergbau von P2pool",
-            "ru": "Наблюдение за Monero Mining от P2pool",
-            "pt": "Observando a mineração de Monero a partir de P2Pool",
-            "nl": "Monero -mijnbouw observeren van P2pool",
-            "fr": "observer l'exploitation de Monero à partir de p2pool",
-            "it": "Osservando il mining Monero da P2Pool",
-            "es": "Observar la minería de Monero de P2Pool",
-            "pl": "Obserwacja Monero Mining z p2pool",
-            "uk": "Спостереження за видобутком Monero від P2Pool",
-            "zh-cn": "观察来自P2Pool的Monero开采"
-        },
-        "authors": ["oelison <p2pooliobroker@sciphy.de>"],
-        "keywords": ["monero", "p2pool", "mining"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "p2pool.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/oelison/ioBroker.p2pool/main/admin/p2pool.png",
-        "readme": "https://github.com/oelison/ioBroker.p2pool/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "misc-data",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.4.10"
-            }
-        ]
+  "common": {
+    "name": "p2pool",
+    "version": "1.0.0",
+    "news": {
+      "1.0.0": {
+        "en": "initial release\nfirst values are shown.\nversion check added",
+        "de": "erstausstrahlung\nerste werte werden angezeigt.\nversionskontrolle hinzugefügt",
+        "ru": "первоначальное освобождение\nпоказаны первые значения.\nпроверка версии добавлена",
+        "pt": "libertação inicial\nos primeiros valores são mostrados.\nverificação de versão adicionada",
+        "nl": "eerste release\nde eerste waarden worden getoond.\nversiecontrole toegevoegd",
+        "fr": "libération initiale\nles premières valeurs sont affichées.\nvérification de la version ajoutée",
+        "it": "rilascio iniziale\nvengono mostrati i primi valori.\ncontrollo versione aggiunto",
+        "es": "liberación inicial\nse muestran los primeros valores.\nverificación de la versión",
+        "pl": "początkowe zwolnienie\npokazane są pierwsze wartości.\nversion check added",
+        "uk": "початковий реліз\nпоказані перші значення.\nперевірка версії додано",
+        "zh-cn": "初步释放\n显示第一个值.\n添加版本检查"
+      }
     },
-    "native": {
-        "monero_key": ""
+    "titleLang": {
+      "en": "p2pool",
+      "de": "p2pool",
+      "ru": "P2Pool",
+      "pt": "P2POOL",
+      "nl": "p2pool",
+      "fr": "p2pool",
+      "it": "p2pool",
+      "es": "P2Pool",
+      "pl": "p2pool",
+      "uk": "P2pool",
+      "zh-cn": "P2Pool"
     },
-    "objects": [],
-    "instanceObjects": []
+    "desc": {
+      "en": "observing monero mining from p2pool",
+      "de": "Beobachten Sie den Monero -Bergbau von P2pool",
+      "ru": "Наблюдение за Monero Mining от P2pool",
+      "pt": "Observando a mineração de Monero a partir de P2Pool",
+      "nl": "Monero -mijnbouw observeren van P2pool",
+      "fr": "observer l'exploitation de Monero à partir de p2pool",
+      "it": "Osservando il mining Monero da P2Pool",
+      "es": "Observar la minería de Monero de P2Pool",
+      "pl": "Obserwacja Monero Mining z p2pool",
+      "uk": "Спостереження за видобутком Monero від P2Pool",
+      "zh-cn": "观察来自P2Pool的Monero开采"
+    },
+    "authors": ["oelison <p2pooliobroker@sciphy.de>"],
+    "keywords": ["monero", "p2pool", "mining"],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "p2pool.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/oelison/ioBroker.p2pool/main/admin/p2pool.png",
+    "readme": "https://github.com/oelison/ioBroker.p2pool/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "misc-data",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.17"
+      }
+    ]
+  },
+  "native": {
+    "monero_key": ""
+  },
+  "objects": [],
+  "instanceObjects": []
 }
