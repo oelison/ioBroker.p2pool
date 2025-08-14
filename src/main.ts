@@ -7,6 +7,8 @@
 import * as utils from '@iobroker/adapter-core';
 import axios from 'axios';
 
+axios.defaults.timeout = 5000; // Set a timeout of 5 seconds for all requests
+
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 
@@ -391,6 +393,14 @@ class P2pool extends utils.Adapter {
         // This log is okay, because the monero_key is not sensitive data. It is the public address of the miner.
         this.log.info(`config monero key: ${this.config.monero_key}`);
         this.log.info('starting p2pool observer adapter...');
+        void this.setObjectNotExists('info', {
+            type: 'folder',
+            common: {
+                name: 'Information',
+                role: 'info',
+            },
+            native: {},
+        });
         void this.setObjectNotExists('info.connection', {
             type: 'state',
             common: {
@@ -400,6 +410,14 @@ class P2pool extends utils.Adapter {
                 read: true,
                 write: false,
                 def: false,
+            },
+            native: {},
+        });
+        void this.setObjectNotExists('raw', {
+            type: 'folder',
+            common: {
+                name: 'Raw Data',
+                role: 'data',
             },
             native: {},
         });
@@ -482,6 +500,22 @@ class P2pool extends utils.Adapter {
         //   "last_share_height":11366313,
         //   "last_share_timestamp":1754230754
         //}
+        void this.setObjectNotExists('details', {
+            type: 'folder',
+            common: {
+                name: 'Details',
+                role: 'info',
+            },
+            native: {},
+        });
+        void this.setObjectNotExists('details.miner_info', {
+            type: 'folder',
+            common: {
+                name: 'Miner Info',
+                role: 'info',
+            },
+            native: {},
+        });
         void this.setObjectNotExists('details.miner_info.last_share_height', {
             type: 'state',
             common: {
@@ -521,6 +555,14 @@ class P2pool extends utils.Adapter {
         //     "including_height":11357501
         //   }
         // ]
+        void this.setObjectNotExists('details.payouts', {
+            type: 'folder',
+            common: {
+                name: 'Payouts',
+                role: 'info',
+            },
+            native: {},
+        });
         void this.setObjectNotExists('details.payouts.timestamp', {
             type: 'state',
             common: {
@@ -572,6 +614,14 @@ class P2pool extends utils.Adapter {
         //     "main_difficulty":690295196720
         //   }
         // ]
+        void this.setObjectNotExists('details.shares', {
+            type: 'folder',
+            common: {
+                name: 'Shares',
+                role: 'info',
+            },
+            native: {},
+        });
         void this.setObjectNotExists('details.shares.software_version', {
             type: 'state',
             common: {
@@ -929,6 +979,22 @@ class P2pool extends utils.Adapter {
         //     }
         //   }
         // }
+        void this.setObjectNotExists('details.pool_info', {
+            type: 'folder',
+            common: {
+                name: 'Pool Info',
+                role: 'folder',
+            },
+            native: {},
+        });
+        void this.setObjectNotExists('details.pool_info.last_block', {
+            type: 'folder',
+            common: {
+                name: 'Last Block',
+                role: 'folder',
+            },
+            native: {},
+        });
         void this.setObjectNotExists('details.pool_info.last_block.software_version', {
             type: 'state',
             common: {
@@ -948,6 +1014,14 @@ class P2pool extends utils.Adapter {
                 role: 'text',
                 read: true,
                 write: false,
+            },
+            native: {},
+        });
+        void this.setForeignObjectNotExists('details.calculated', {
+            type: 'folder',
+            common: {
+                name: 'Calculated Data',
+                role: 'folder',
             },
             native: {},
         });

@@ -23,6 +23,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_axios = __toESM(require("axios"));
+import_axios.default.defaults.timeout = 5e3;
 class P2pool extends utils.Adapter {
   constructor(options = {}) {
     super({
@@ -206,6 +207,14 @@ class P2pool extends utils.Adapter {
     this.log.debug(reqUrl);
     this.log.info(`config monero key: ${this.config.monero_key}`);
     this.log.info("starting p2pool observer adapter...");
+    void this.setObjectNotExists("info", {
+      type: "folder",
+      common: {
+        name: "Information",
+        role: "info"
+      },
+      native: {}
+    });
     void this.setObjectNotExists("info.connection", {
       type: "state",
       common: {
@@ -215,6 +224,14 @@ class P2pool extends utils.Adapter {
         read: true,
         write: false,
         def: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("raw", {
+      type: "folder",
+      common: {
+        name: "Raw Data",
+        role: "data"
       },
       native: {}
     });
@@ -273,6 +290,22 @@ class P2pool extends utils.Adapter {
       },
       native: {}
     });
+    void this.setObjectNotExists("details", {
+      type: "folder",
+      common: {
+        name: "Details",
+        role: "info"
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.miner_info", {
+      type: "folder",
+      common: {
+        name: "Miner Info",
+        role: "info"
+      },
+      native: {}
+    });
     void this.setObjectNotExists("details.miner_info.last_share_height", {
       type: "state",
       common: {
@@ -295,6 +328,14 @@ class P2pool extends utils.Adapter {
       },
       native: {}
     });
+    void this.setObjectNotExists("details.payouts", {
+      type: "folder",
+      common: {
+        name: "Payouts",
+        role: "info"
+      },
+      native: {}
+    });
     void this.setObjectNotExists("details.payouts.timestamp", {
       type: "state",
       common: {
@@ -314,6 +355,14 @@ class P2pool extends utils.Adapter {
         role: "value",
         read: true,
         write: false
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.shares", {
+      type: "folder",
+      common: {
+        name: "Shares",
+        role: "info"
       },
       native: {}
     });
@@ -350,6 +399,22 @@ class P2pool extends utils.Adapter {
       },
       native: {}
     });
+    void this.setObjectNotExists("details.pool_info", {
+      type: "folder",
+      common: {
+        name: "Pool Info",
+        role: "folder"
+      },
+      native: {}
+    });
+    void this.setObjectNotExists("details.pool_info.last_block", {
+      type: "folder",
+      common: {
+        name: "Last Block",
+        role: "folder"
+      },
+      native: {}
+    });
     void this.setObjectNotExists("details.pool_info.last_block.software_version", {
       type: "state",
       common: {
@@ -369,6 +434,14 @@ class P2pool extends utils.Adapter {
         role: "text",
         read: true,
         write: false
+      },
+      native: {}
+    });
+    void this.setForeignObjectNotExists("details.calculated", {
+      type: "folder",
+      common: {
+        name: "Calculated Data",
+        role: "folder"
       },
       native: {}
     });
