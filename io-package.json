@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "p2pool",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "news": {
+      "1.1.0": {
+        "en": "rework readme\nrework for process",
+        "de": "rework readme\nnacharbeiten für den prozess",
+        "ru": "переделывать readme\nпеределка для процесса",
+        "pt": "rework readme\nretrabalho para processo",
+        "nl": "rework readme\nherwerken voor proces",
+        "fr": "retravailler\nretravail pour le processus",
+        "it": "rework readme\nrielaborazione per processo",
+        "es": "rework readme\nrework for process",
+        "pl": "rework readme\nprzetworzenie procesu",
+        "uk": "реконструкція\nреконструкція процесу",
+        "zh-cn": "重修读本\n流程的重新设计"
+      },
       "1.0.0": {
         "en": "initial release\nfirst values are shown.\nversion check added",
         "de": "erstausstrahlung\nerste werte werden angezeigt.\nversionskontrolle hinzugefügt",
@@ -43,8 +56,14 @@
       "uk": "Спостереження за видобутком Monero від P2Pool",
       "zh-cn": "观察来自P2Pool的Monero开采"
     },
-    "authors": ["oelison <p2pooliobroker@sciphy.de>"],
-    "keywords": ["monero", "p2pool", "mining"],
+    "authors": [
+      "oelison <p2pooliobroker@sciphy.de>"
+    ],
+    "keywords": [
+      "monero",
+      "p2pool",
+      "mining"
+    ],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
