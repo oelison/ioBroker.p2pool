@@ -185,6 +185,8 @@ interface PoolInfo {
 }
 
 class P2pool extends utils.Adapter {
+    private version_missmatch_send: boolean = false;
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -353,11 +355,15 @@ class P2pool extends utils.Adapter {
                             if (p2poolVersion === myLastVersionVal) {
                                 await this.setState('details.calculated.version_missmatch', false, true);
                                 this.log.debug(`P2Pool version matches: ${p2poolVersion}`);
+                                this.version_missmatch_send = false; // Reset the flag on match
                             } else {
                                 await this.setState('details.calculated.version_missmatch', true, true);
-                                this.log.warn(
-                                    `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`,
-                                );
+                                if (!this.version_missmatch_send) {
+                                    this.version_missmatch_send = true; // Set the flag to prevent further messages
+                                    this.log.warn(
+                                        `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`,
+                                    );
+                                }
                             }
                         }
                     }
@@ -532,7 +538,7 @@ class P2pool extends utils.Adapter {
             common: {
                 name: 'Miner Info',
                 type: 'number',
-                role: 'value',
+                role: 'date',
                 read: true,
                 write: false,
             },
@@ -568,7 +574,7 @@ class P2pool extends utils.Adapter {
             common: {
                 name: 'Miner ID',
                 type: 'number',
-                role: 'value',
+                role: 'date',
                 read: true,
                 write: false,
             },

@@ -25,6 +25,7 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_axios = __toESM(require("axios"));
 import_axios.default.defaults.timeout = 5e3;
 class P2pool extends utils.Adapter {
+  version_missmatch_send = false;
   constructor(options = {}) {
     super({
       ...options,
@@ -173,11 +174,15 @@ class P2pool extends utils.Adapter {
               if (p2poolVersion === myLastVersionVal) {
                 await this.setState("details.calculated.version_missmatch", false, true);
                 this.log.debug(`P2Pool version matches: ${p2poolVersion}`);
+                this.version_missmatch_send = false;
               } else {
                 await this.setState("details.calculated.version_missmatch", true, true);
-                this.log.warn(
-                  `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`
-                );
+                if (!this.version_missmatch_send) {
+                  this.version_missmatch_send = true;
+                  this.log.warn(
+                    `P2Pool version mismatch: ${p2poolVersion} (p2pool) vs ${myLastVersion.val} (last known p2pool version)`
+                  );
+                }
               }
             }
           }
@@ -322,7 +327,7 @@ class P2pool extends utils.Adapter {
       common: {
         name: "Miner Info",
         type: "number",
-        role: "value",
+        role: "date",
         read: true,
         write: false
       },
@@ -341,7 +346,7 @@ class P2pool extends utils.Adapter {
       common: {
         name: "Miner ID",
         type: "number",
-        role: "value",
+        role: "date",
         read: true,
         write: false
       },
