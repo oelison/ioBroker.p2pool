@@ -10,7 +10,7 @@ import axios from 'axios';
 axios.defaults.timeout = 5000; // Set a timeout of 5 seconds for all requests
 
 // Load your modules here, e.g.:
-// import * as fs from "fs";
+// import * as fs from "node:fs";
 
 interface MinerInfoShare {
     shares: number;
