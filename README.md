@@ -35,6 +35,8 @@ Miner alias or id is not working.
 - (oelison) first values are shown.
 - (oelison) version check added
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
